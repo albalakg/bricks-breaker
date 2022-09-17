@@ -1,9 +1,9 @@
 export default class Lives {
 
   constructor(ctx, position) {
-    this.image = document.getElementById('heart');
-    this.width = 30;
-    this.height = 30;
+    this.image    = document.getElementById('heart');
+    this.width    = 30;
+    this.height   = 30;
     this.position = position;
     this.draw(ctx)
   }

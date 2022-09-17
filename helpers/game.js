@@ -1,8 +1,15 @@
-import Paddle from "./paddle.js";
-import Handler from "./handler.js";
-import Ball from "./ball.js";
-import Lives from "./lives.js";
-import { buildLevel, Level1, Level2, Level3, Speed } from "./levels.js";
+import Paddle         from "./paddle.js";
+import Handler        from "./handler.js";
+import Ball           from "./ball.js";
+import Lives          from "./lives.js";
+import DroppedObject  from "./droppedObject.js";
+import { 
+  buildLevel,
+  Level1,
+  Level2,
+  Level3,
+  Speed
+ } from "./levels.js";
 
 const GAMESTATE = {
   paused: 0,
@@ -16,21 +23,19 @@ const GAMESTATE = {
 export default class Game {
 
   constructor(game_width, game_height) {
-    this.game_width = game_width;
-    this.game_height = game_height;
-
-    this.gamestate = GAMESTATE.menu;
-
-    this.objects = [];
-    this.statedBricks = [];
-    this.bricks = [];
-    this.levels = [Level1, Level2, Level3];
-    this.currentLevel = 0;
-    this.lives = 3;
-    this.speed = Speed[this.currentLevel];
-
-    this.paddle = new Paddle(this);
-    this.ball = new Ball(this);
+    this.game_width     = game_width;
+    this.game_height    = game_height;
+    this.gamestate      = GAMESTATE.menu;
+    this.objects        = [];
+    this.droppedObjects = [];
+    this.statedBricks   = [];
+    this.bricks         = [];
+    this.levels         = [Level1, Level2, Level3];
+    this.currentLevel   = 0;
+    this.lives          = 3;
+    this.speed          = Speed[this.currentLevel];
+    this.paddle         = new Paddle(this);
+    this.ball           = new Ball(this);
 
     new Handler(this.paddle, this);
   }
@@ -48,7 +53,7 @@ export default class Game {
 
   update(time) {
     if (this.lives === 0) this.gamestate = GAMESTATE.gameover;
-
+    
     if (this.gamestate != 1) return;
     [...this.objects, ...this.bricks].forEach(e => e.update(time));
     this.bricks = this.bricks.filter(brick => !brick.markedOfHit);
@@ -58,6 +63,9 @@ export default class Game {
     this.checkGameState(ctx)
     if ([2, 3, 4, 5].includes(this.gamestate)) return;
     [...this.objects, ...this.bricks].forEach(e => e.draw(ctx));
+    
+    this.drawDroppedObjects();
+
     this.generateLives(ctx);
     this.generateLevel(ctx);
 
@@ -65,6 +73,17 @@ export default class Game {
       this.currentLevel++;
       this.gamestate = GAMESTATE.levelup;
     }
+  }
+
+  drawDroppedObjects() {
+    this.droppedObjects.forEach((droppedObject, index) => {
+      if(droppedObject.position.y > this.game_height) {
+        this.droppedObjects.splice(index, 1);
+        return;
+      }
+
+      droppedObject.draw(index);
+    })
   }
 
   updateGameState(state) {
